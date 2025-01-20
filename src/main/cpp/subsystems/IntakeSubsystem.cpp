@@ -32,7 +32,7 @@ IntakeSubsystem::IntakeSubsystem()
         .SetIdleMode(SparkBaseConfig::IdleMode::kBrake)
         .Inverted(false);
     config.ClosedLoopRampRate(0.0);
-    config.closedLoop.OutputRange(kDeployMinOut, kDeployMaxOut);
+    config.closedLoop.OutputRange(kMinOut, kMaxOut);
 
     m_deployMotor.Configure(config, SparkBase::ResetMode::kNoResetSafeParameters, SparkBase::PersistMode::kPersistParameters);
     
@@ -120,7 +120,6 @@ void IntakeSubsystem::LoadDeployPid()
     lastExtendP = pExtend;
     lastI = i;
     lastD = d;
-
 }
 
 void IntakeSubsystem::Set(double speed)
@@ -148,7 +147,6 @@ void IntakeSubsystem::ExtendIntake(double turns)
     m_deployPIDController.SetReference(turns + offsetTurns, SparkBase::ControlType::kPosition, c_intakeGeneralPIDSlot);
     m_deployFollowPIDController.SetReference(turns, SparkBase::ControlType::kPosition, c_intakeGeneralPIDSlot);
 }
-
 
 void IntakeSubsystem::RetractIntake()
 {
