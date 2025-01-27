@@ -7,6 +7,10 @@
 
 #include <frc/Preferences.h>
 
+using namespace frc;
+using namespace ctre::phoenix::motorcontrol;
+using namespace rev::spark;
+
 constexpr double c_defaultIntakeP = 0.03;
 constexpr double c_defaultIntakeExtendP = 0.03;
 constexpr double c_defaultIntakeI = 0.0;

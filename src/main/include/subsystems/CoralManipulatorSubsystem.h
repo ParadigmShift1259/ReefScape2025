@@ -16,9 +16,7 @@ WPI_UNIGNORE_DEPRECATED
 
 #include <rev/SparkMax.h>
 
-using namespace frc;
 using namespace ctre::phoenix::motorcontrol::can;
-using namespace ctre::phoenix::motorcontrol;
 using namespace rev::spark;
 
 constexpr double kIngestSpeed = 1.0;
@@ -51,6 +49,7 @@ private:
 
     /// 775 that runs intake
     TalonSRX m_motor;
+    frc::Timer m_timer;
     frc::DigitalInput m_photoEye;
 
     SparkMax m_deployMotor;

@@ -23,10 +23,12 @@ enum EMoveDirection
     , eJogBackward
 } ;
 
-class GoToPositionCommand: public frc2::CommandHelper<frc2::Command, GoToPositionCommand>
+class GoToPositionCommand : public frc2::CommandHelper<frc2::Command, GoToPositionCommand>
 {
     public:
-        explicit GoToPositionCommand(ISubsystemAccess& subsystemAccess, EMoveDirection elmr);
+
+        explicit GoToPositionCommand(ISubsystemAccess& subsystemAccess, EMoveDirection elmr, std::shared_ptr<PathPlannerPath>& path);
+        //explicit GoToPositionCommand(ISubsystemAccess& subsystemAccess, EMoveDirection elmr);
         void Initialize() override;
         void Execute() override;
         bool IsFinished() override;
@@ -34,7 +36,7 @@ class GoToPositionCommand: public frc2::CommandHelper<frc2::Command, GoToPositio
 
     private:
         // PathPlannerPath m_path;
-        PathConstraints m_pathConstraints { 1.0_mps, 1.0_mps_sq, 1.0_rad_per_s, 1.0_rad_per_s_sq };
+        PathConstraints m_pathConstraints { 1.0_mps, 1.0_mps_sq, 90_deg_per_s, 180_deg_per_s_sq };
 
         DriveSubsystem&        m_driveSubsystem;
         VisionSubsystem&        m_visionSubsystem;
@@ -44,6 +46,8 @@ class GoToPositionCommand: public frc2::CommandHelper<frc2::Command, GoToPositio
         double m_targetRot;
         EMoveDirection m_elmr;
         bool m_bJogging;
+        //std::optional<frc2::CommandPtr>& m_pathCmd;
+        std::shared_ptr<PathPlannerPath> m_path;
 
         frc::Timer m_timer;
 

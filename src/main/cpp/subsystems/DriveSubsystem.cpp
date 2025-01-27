@@ -9,6 +9,23 @@
 
 DriveSubsystem::DriveSubsystem()
   : m_gyro(kDrivePigeonCANID)
+  , m_moduleCfg
+    {   
+        SwerveModule::kWheelRadius
+      , kMaxSpeed * 0.85              // true max speed of robot not simply a "max velocity" limit on the robot
+      , 1.0                           // wheelCOF coefficient of friction, unknown, docs suggest 1.0
+      , frc::DCMotor::KrakenX60(1)
+      , SwerveModule::kDriveGearRatio
+      , 100.0_A                        // driveCurrentLimit
+      , 1                             // numMotors
+    }
+  , m_robotConfig 
+    {
+        60_kg
+      , (60_kg * (0.7903212_sq_m + 0.7903212_sq_m)) / 12.0  // Moment of inertia
+      , m_moduleCfg
+      , { m_frontLeftLocation , m_frontRightLocation, m_rearLeftLocation, m_rearRightLocation }
+  }
 {
   m_gyro.Reset();
 
@@ -46,14 +63,20 @@ DriveSubsystem::DriveSubsystem()
   frc::SmartDashboard::PutNumber("yawsign", 1.0);
 }
 
-void DriveSubsystem::Drive(units::meters_per_second_t xSpeed,
-                       units::meters_per_second_t ySpeed,
-                       units::radians_per_second_t rot, bool fieldRelative)
+void DriveSubsystem::Drive(const frc::ChassisSpeeds& speeds, const DriveFeedforwards& dffs)
+{
+  Drive(-speeds.vx, speeds.vy, speeds.omega, false);  // Invert x direction?
+}
+
+void DriveSubsystem::Drive( units::meters_per_second_t xSpeed,
+                            units::meters_per_second_t ySpeed,
+                            units::radians_per_second_t rot, bool fieldRelative)
 {
   //printf("DriveSubsystem::Drive xspd %.3f yspd %.3f rot %.3f fldrel %d\n", xSpeed.value(), ySpeed.value(), rot.value(), fieldRelative);
-  m_logDriveInputX.Append(xSpeed.to<double>());
-  m_logDriveInputY.Append(ySpeed.to<double>());
-  m_logDriveInputRot.Append(rot.to<double>());
+  // Updates the last value and appends a record to the log if it has changed. 
+  m_logDriveInputX.Update(xSpeed.to<double>());
+  m_logDriveInputY.Update(ySpeed.to<double>());
+  m_logDriveInputRot.Update(rot.to<double>());
 
   m_frontLeft.SetMaxSpeed(m_currentMaxSpeed);
   m_frontRight.SetMaxSpeed(m_currentMaxSpeed);
@@ -168,10 +191,10 @@ void DriveSubsystem::Periodic()
   frc::Pose2d pose = m_poseEstimator.GetEstimatedPosition();
   //frc::Pose2d pose = m_odometry.GetPose();
 
-  m_logRobotPoseX.Append(pose.X().to<double>());
-  m_logRobotPoseY.Append(pose.Y().to<double>());
-  m_logRobotPoseTheta.Append(pose.Rotation().Degrees().to<double>());
-  m_logGyroPitch.Append(m_gyro.GetPitch()); 
+  m_logRobotPoseX.Update(pose.X().to<double>());
+  m_logRobotPoseY.Update(pose.Y().to<double>());
+  m_logRobotPoseTheta.Update(pose.Rotation().Degrees().to<double>());
+  m_logGyroPitch.Update(m_gyro.GetPitch()); 
   frc::SmartDashboard::PutNumber("currPoseRadians", GetGyroAzimuth().value());
 
   frc::SmartDashboard::PutNumber("azimuthDeg", m_gyro.GetRotation2d().Degrees().value());
@@ -246,7 +269,7 @@ void DriveSubsystem::ResetOdometry(frc::Pose2d pose)
 
   SwerveModulePositions modulePositions = {m_frontLeft.GetPosition(), m_frontRight.GetPosition(),
                                            m_rearLeft.GetPosition(), m_rearRight.GetPosition()};
-  printf("m_gyro.GetRotation2d().Degrees %.3f pose.Rotation().Degrees %.3f\n", m_gyro.GetRotation2d().Degrees().value(), pose.Rotation().Degrees().value());
+  // printf("m_gyro.GetRotation2d().Degrees %.3f pose.Rotation().Degrees %.3f\n", m_gyro.GetRotation2d().Degrees().value(), pose.Rotation().Degrees().value());
   m_gyro.Set(pose.Rotation().Degrees());
   m_poseEstimator.ResetPosition(pose.Rotation(), modulePositions, pose);
   //m_odometry.ResetPosition(pose.Rotation(), modulePositions, pose);

@@ -17,7 +17,7 @@ WPI_IGNORE_DEPRECATED
 #include <ctre/phoenix/motorcontrol/can/TalonSRX.h>
 WPI_UNIGNORE_DEPRECATED
 
-#include <rev/SparkMax.h>
+#include <rev/SparkFlex.h>
 
 using namespace ctre::phoenix::motorcontrol::can;
 using namespace ctre::phoenix::motorcontrol;
@@ -45,6 +45,10 @@ public:
 
     void GoToPosition(double position);
 
+    void ElevatorReset(){ m_leadRelativeEnc.SetPosition(0.0); m_followRelativeEnc.SetPosition(0.0);}
+
+    void GotoPositionRel(double relPos);
+
     enum Position {
         kDefaultPosition,
         kResetPosition = kDefaultPosition,
@@ -55,10 +59,10 @@ public:
 private:
     SparkBaseConfig m_leadConfig{};
     SparkBaseConfig m_followConfig{};
-    SparkMax m_leadMotor;
+    SparkFlex m_leadMotor;
     SparkRelativeEncoder m_leadRelativeEnc = m_leadMotor.GetEncoder();    
     SparkClosedLoopController m_leadPIDController = m_leadMotor.GetClosedLoopController();
-    SparkMax m_followMotor;
+    SparkFlex m_followMotor;
     SparkRelativeEncoder m_followRelativeEnc = m_followMotor.GetEncoder();    
     SparkClosedLoopController m_followPIDController = m_followMotor.GetClosedLoopController();
 
@@ -66,4 +70,7 @@ private:
 
     double m_leadDirection = 1.0;
     double m_followDirection = 1.0;
+
+    double m_position = 0.0;
+    ClosedLoopSlot m_slot = ClosedLoopSlot::kSlot0;
 };
